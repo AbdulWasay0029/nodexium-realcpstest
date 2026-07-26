@@ -1,0 +1,45 @@
+---
+const currentPath = Astro.url.pathname;
+const links = [
+  { href: "/", label: "CPS Test" },
+  { href: "/spacebar-counter", label: "Spacebar" },
+  { href: "/kohi-click-test", label: "Kohi" },
+  { href: "/jitter-click-test", label: "Jitter" },
+];
+---
+
+<header class="sticky top-0 z-50 w-full border-b border-white/10 bg-[#0B0F19]/80 backdrop-blur-xl">
+  <nav aria-label="Primary" class="mx-auto flex max-w-6xl items-center justify-between px-4 h-16">
+    <a href="/" class="font-display text-base sm:text-lg font-bold tracking-tight text-[#EDEDED] flex items-center gap-2 hover:opacity-80 transition-opacity">
+      <span>Real<span class="text-[#00D4FF]">CPSTest</span></span>
+      <span class="ml-2 text-[10px] text-[#A1A1A1] font-mono hidden sm:inline-block border border-white/10 px-2 py-0.5 rounded-full mt-0.5">by Nodexium</span>
+    </a>
+    <ul class="flex items-center gap-1 sm:gap-2 relative">
+      <li>
+        <a href="/" class={`tap-safe inline-flex h-9 items-center justify-center rounded-lg px-3 text-[10px] transition-colors sm:text-xs font-mono ${currentPath === '/' ? 'text-[#00D4FF] bg-[#00D4FF]/10 border border-[#00D4FF]/30 font-semibold shadow-[0_0_10px_rgba(0,212,255,0.1)]' : 'text-[#A1A1A1] border border-transparent hover:text-[#EDEDED] hover:bg-white/5'}`}>
+          CPS Test
+        </a>
+      </li>
+      <li>
+        <a href="/spacebar-counter" class={`tap-safe inline-flex h-9 items-center justify-center rounded-lg px-3 text-[10px] transition-colors sm:text-xs font-mono ${currentPath.includes('spacebar') ? 'text-[#00D4FF] bg-[#00D4FF]/10 border border-[#00D4FF]/30 font-semibold shadow-[0_0_10px_rgba(0,212,255,0.1)]' : 'text-[#A1A1A1] border border-transparent hover:text-[#EDEDED] hover:bg-white/5'}`}>
+          Spacebar
+        </a>
+      </li>
+      
+      <!-- Dropdown for More Tests -->
+      <li class="relative group">
+        <button class="tap-safe inline-flex h-9 items-center justify-center rounded-lg px-3 text-[10px] transition-colors sm:text-xs font-mono text-[#A1A1A1] border border-transparent hover:text-[#EDEDED] hover:bg-white/5">
+          More Tests <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </button>
+        
+        <div class="absolute right-0 top-full mt-1 w-48 rounded-xl border border-white/10 bg-[#0B0F19]/95 backdrop-blur-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden z-50 transform origin-top-right group-hover:scale-100 scale-95 p-1">
+          <a href="/kohi-click-test" class="block px-4 py-2.5 text-xs font-mono text-[#A1A1A1] hover:text-[#EDEDED] hover:bg-white/5 rounded-lg transition-colors">Kohi Click Test</a>
+          <a href="/jitter-click-test" class="block px-4 py-2.5 text-xs font-mono text-[#A1A1A1] hover:text-[#EDEDED] hover:bg-white/5 rounded-lg transition-colors">Jitter Click Test</a>
+          <a href="/butterfly-click-test" class="block px-4 py-2.5 text-xs font-mono text-[#A1A1A1] hover:text-[#EDEDED] hover:bg-white/5 rounded-lg transition-colors">Butterfly Click</a>
+          <a href="/drag-click-test" class="block px-4 py-2.5 text-xs font-mono text-[#A1A1A1] hover:text-[#EDEDED] hover:bg-white/5 rounded-lg transition-colors">Drag Click</a>
+        </div>
+      </li>
+    </ul>
+  </nav>
+</header>
+

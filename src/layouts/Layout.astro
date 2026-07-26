@@ -1,0 +1,125 @@
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { 
+  title = "Real CPS Test - Check Clicks Per Second (Free CPS Tester)",
+  description = "Check your CPS (Clicks Per Second) speed with our free, instant CPS tester. Test 1s, 5s, 10s, 60s click speed with gamified animal ranks, zero pop-up ads, and instant score sharing."
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Premium Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600&display=swap" rel="stylesheet">
+    <style is:global>
+
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+
+  :root {
+    --font-sans: 'Outfit', system-ui, sans-serif;
+    --font-display: 'Outfit', system-ui, sans-serif;
+    --bg-canvas: #0B0F19;
+    --grid-line: rgba(255, 255, 255, 0.035);
+    --glass-surface: rgba(21, 29, 48, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glow-accent: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 0 40px -12px rgba(34, 211, 238, 0.45);
+  }
+
+  body {
+    background-color: var(--bg-canvas);
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-attachment: fixed;
+    font-family: var(--font-sans);
+  }
+
+  .font-display {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.04em;
+  }
+
+  .font-mono, .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  .glass {
+    background: var(--glass-surface);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glow-hover {
+    transition: box-shadow 200ms ease, border-color 200ms ease, transform 120ms ease;
+  }
+  .glow-hover:hover {
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: var(--glow-accent);
+  }
+
+  .tap-safe {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  @keyframes ripple-out {
+    from {
+      transform: scale(0);
+      opacity: 0.5;
+    }
+    to {
+      transform: scale(1);
+      opacity: 0;
+    }
+  }
+
+  .ripple {
+    position: absolute;
+    border-radius: 9999px;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.55), transparent 70%);
+    animation: ripple-out 480ms ease-out forwards;
+  }
+
+
+  .focus-ring:focus-visible {
+    outline: 2px solid #00D4FF;
+    outline-offset: 2px;
+  }
+</style>
+  </head>
+  <body class="min-h-screen flex flex-col antialiased">
+    <Navbar />
+    
+    <!-- Main Content -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 sm:py-10">
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>
