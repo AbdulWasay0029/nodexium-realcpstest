@@ -291,11 +291,11 @@ import Layout from '../layouts/Layout.astro';
         <button id="reset-btn" type="button" class="flex-1 bg-[#00D4FF] text-[#04222B] hover:bg-[#00B8E6] font-display font-bold text-sm px-6 py-4 rounded-2xl transition-all active:scale-95 shadow-[0_0_20px_rgba(0,212,255,0.15)] flex justify-center">
           TRY AGAIN
         </button>
-        <button id="share-btn" type="button" class="flex-none bg-white/5 border border-white/10 hover:bg-white/10 text-[#EDEDED] w-14 h-14 rounded-2xl flex items-center justify-center transition-all active:scale-95">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+        <button id="download-btn" type="button" class="flex-none bg-white/5 border border-white/10 hover:bg-white/10 text-[#EDEDED] w-14 h-14 rounded-2xl flex items-center justify-center transition-all active:scale-95" title="Copy or Download Image">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
         </button>
-        <button id="copy-link-btn" type="button" class="flex-none bg-white/5 border border-white/10 hover:bg-white/10 text-[#EDEDED] w-14 h-14 rounded-2xl flex items-center justify-center transition-all active:scale-95">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+        <button id="share-btn" type="button" class="flex-none bg-white/5 border border-white/10 hover:bg-white/10 text-[#EDEDED] w-14 h-14 rounded-2xl flex items-center justify-center transition-all active:scale-95" title="Share via OS">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
         </button>
       </div>
 
@@ -327,8 +327,8 @@ import Layout from '../layouts/Layout.astro';
       
       const resetBtn = document.getElementById('reset-btn');
       const instantResetBtn = document.getElementById('instant-reset-btn');
+      const downloadBtn = document.getElementById('download-btn');
       const shareBtn = document.getElementById('share-btn');
-      const copyLinkBtn = document.getElementById('copy-link-btn');
       const timerBtns = document.querySelectorAll('.timer-btn');
 
       // Initialize Best CPS
@@ -557,168 +557,186 @@ import Layout from '../layouts/Layout.astro';
         resetTest();
       });
 
-      // Share Logic
-      const shareText = () => `I just scored ${finalCps.textContent} CPS (${rankIconContainer.textContent} ${rankName.textContent})! "${roastLine.textContent}" Test your speed at https://realcpstest.com`;
+      // Image Generation Helper
+      const generateScorecardBlob = () => {
+        return new Promise((resolve, reject) => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 1000;
+            const ctx = canvas.getContext('2d');
+
+            const fillTextCenter = (text, y) => {
+              const w = ctx.measureText(text).width;
+              ctx.fillText(text, (canvas.width - w) / 2, y);
+            };
+
+            ctx.fillStyle = '#0B0F19';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const gradient = ctx.createRadialGradient(400, 0, 0, 400, 0, 800);
+            gradient.addColorStop(0, 'rgba(0, 212, 255, 0.15)');
+            gradient.addColorStop(1, 'rgba(11, 15, 25, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+            ctx.fillStyle = '#EDEDED';
+            ctx.font = 'bold 24px sans-serif';
+            ctx.fillText('Real', 40, 55);
+            const realWidth = ctx.measureText('Real').width;
+            ctx.fillStyle = '#00D4FF';
+            ctx.fillText('CPSTest', 40 + realWidth + 5, 55);
+
+            ctx.font = '140px sans-serif';
+            fillTextCenter(rankIconContainer.textContent, 260);
+
+            ctx.fillStyle = '#EDEDED';
+            ctx.font = 'bold 64px sans-serif';
+            fillTextCenter(rankName.textContent, 370);
+
+            let scoreVal = parseFloat(finalCps.textContent);
+            let starCount = 1;
+            if (scoreVal >= 15) starCount = 5;
+            else if (scoreVal >= 12) starCount = 4;
+            else if (scoreVal >= 9) starCount = 3;
+            else if (scoreVal >= 6.5) starCount = 2;
+            
+            ctx.font = '45px sans-serif';
+            let starX = (canvas.width - (5 * 45)) / 2;
+            for (let i = 0; i < 5; i++) {
+                ctx.fillStyle = (i < starCount) ? '#00D4FF' : 'rgba(255, 255, 255, 0.2)';
+                ctx.fillText('★', starX + (i * 45), 440);
+            }
+
+            const roastText = roastLine.textContent;
+            ctx.font = 'italic 22px sans-serif';
+            const roastW = ctx.measureText(roastText).width;
+            const pillW = roastW + 80;
+            const pillX = (canvas.width - pillW) / 2;
+            const pillY = 490;
+            
+            ctx.fillStyle = 'rgba(11, 15, 25, 0.5)';
+            ctx.beginPath();
+            ctx.roundRect(pillX, pillY, pillW, 60, 20);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.stroke();
+
+            ctx.fillStyle = '#A1A1A1';
+            fillTextCenter(roastText, 528);
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.beginPath();
+            ctx.moveTo(100, 610);
+            ctx.lineTo(700, 610);
+            ctx.stroke();
+
+            ctx.font = 'bold 130px monospace';
+            const cpsNum = finalCps.textContent;
+            const cpsW = ctx.measureText(cpsNum).width;
+            
+            ctx.font = 'bold 36px sans-serif';
+            const cpsTextW = ctx.measureText(' CPS').width;
+            
+            const totalW = cpsW + cpsTextW;
+            const startX = (canvas.width - totalW) / 2;
+
+            ctx.fillStyle = '#00D4FF';
+            ctx.font = 'bold 130px monospace';
+            ctx.fillText(cpsNum, startX, 760);
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.font = 'bold 36px sans-serif';
+            ctx.fillText(' CPS', startX + cpsW, 760);
+
+            ctx.fillStyle = 'rgba(161, 161, 161, 0.6)';
+            ctx.font = '18px monospace';
+            fillTextCenter(finalStats.textContent, 830);
+
+            ctx.fillStyle = '#A1A1A1';
+            ctx.font = 'bold 20px sans-serif';
+            fillTextCenter('TEST YOUR SPEED AT REALCPSTEST.PAGES.DEV', 940);
+
+            canvas.toBlob((blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error('Canvas toBlob failed'));
+            }, 'image/png');
+          } catch(err) {
+            reject(err);
+          }
+        });
+      };
       
+      downloadBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const originalText = downloadBtn.innerHTML;
+        downloadBtn.innerHTML = '<span class="text-xs">Wait..</span>';
+        try {
+          const blob = await generateScorecardBlob();
+          let copied = false;
+          if (navigator.clipboard && navigator.clipboard.write) {
+            try {
+              const item = new ClipboardItem({ "image/png": blob });
+              await navigator.clipboard.write([item]);
+              copied = true;
+            } catch(e) {}
+          }
+          if (copied) {
+            downloadBtn.innerHTML = '<span class="text-[#3FB950] text-xs font-bold">Copied!</span>';
+          } else {
+             const url = URL.createObjectURL(blob);
+             const a = document.createElement('a');
+             a.href = url;
+             a.download = `RealCPSTest-Score-${finalCps.textContent}.png`;
+             a.click();
+             URL.revokeObjectURL(url);
+             downloadBtn.innerHTML = '<span class="text-[#3FB950] text-xs font-bold">Saved!</span>';
+          }
+        } catch (err) {
+          downloadBtn.innerHTML = '<span class="text-red-500 text-xs">Error</span>';
+        }
+        setTimeout(() => { downloadBtn.innerHTML = originalText; }, 2500);
+      });
+
       shareBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         const originalText = shareBtn.innerHTML;
-        shareBtn.innerHTML = '<span class="text-xs">Copying...</span>';
+        shareBtn.innerHTML = '<span class="text-xs">Wait..</span>';
         try {
-          const canvas = document.createElement('canvas');
-          canvas.width = 800;
-          canvas.height = 1000; // Perfect 4:5 vertical portrait
-          const ctx = canvas.getContext('2d');
-
-          // Helper for center text
-          const fillTextCenter = (text, y) => {
-            const w = ctx.measureText(text).width;
-            ctx.fillText(text, (canvas.width - w) / 2, y);
-          };
-
-          // 1. Background (Dark with subtle blue glow top)
-          ctx.fillStyle = '#0B0F19';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          
-          const gradient = ctx.createRadialGradient(400, 0, 0, 400, 0, 800);
-          gradient.addColorStop(0, 'rgba(0, 212, 255, 0.15)');
-          gradient.addColorStop(1, 'rgba(11, 15, 25, 0)');
-          ctx.fillStyle = gradient;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          // 2. Borders (Glassmorphism look)
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-
-          // 3. Header Branding (Top Left)
-          ctx.fillStyle = '#EDEDED';
-          ctx.font = 'bold 24px sans-serif';
-          ctx.fillText('Real', 40, 55);
-          const realWidth = ctx.measureText('Real').width;
-          ctx.fillStyle = '#00D4FF';
-          ctx.fillText('CPSTest', 40 + realWidth + 5, 55);
-
-          // 4. Emoji at Top Center
-          ctx.font = '140px sans-serif';
-          fillTextCenter(rankIconContainer.textContent, 260);
-
-          // 5. Rank Name
-          ctx.fillStyle = '#EDEDED';
-          ctx.font = 'bold 64px sans-serif';
-          fillTextCenter(rankName.textContent, 370);
-
-          // 6. Stars
-          let scoreVal = parseFloat(finalCps.textContent);
-          let starCount = 1;
-          if (scoreVal >= 15) starCount = 5;
-          else if (scoreVal >= 12) starCount = 4;
-          else if (scoreVal >= 9) starCount = 3;
-          else if (scoreVal >= 6.5) starCount = 2;
-          
-          ctx.font = '45px sans-serif';
-          // Draw filled stars cyan, empty stars gray
-          let starX = (canvas.width - (5 * 45)) / 2;
-          for (let i = 0; i < 5; i++) {
-              ctx.fillStyle = (i < starCount) ? '#00D4FF' : 'rgba(255, 255, 255, 0.2)';
-              ctx.fillText('★', starX + (i * 45), 440);
+          const blob = await generateScorecardBlob();
+          if (navigator.share) {
+            const file = new File([blob], `RealCPSTest-Score-${finalCps.textContent}.png`, { type: "image/png" });
+            await navigator.share({
+              title: "My CPS Score",
+              files: [file]
+            });
+            shareBtn.innerHTML = '<span class="text-[#3FB950] text-xs font-bold">Shared!</span>';
+          } else {
+             // Fallback to clipboard if share not supported
+             let copied = false;
+             if (navigator.clipboard && navigator.clipboard.write) {
+               try {
+                 const item = new ClipboardItem({ "image/png": blob });
+                 await navigator.clipboard.write([item]);
+                 copied = true;
+               } catch(e) {}
+             }
+             shareBtn.innerHTML = copied ? '<span class="text-[#3FB950] text-xs">Copied!</span>' : '<span class="text-red-500 text-xs">Unavail</span>';
           }
-
-          // 7. Roast Pill
-          const roastText = roastLine.textContent;
-          ctx.font = 'italic 22px sans-serif';
-          const roastW = ctx.measureText(roastText).width;
-          const pillW = roastW + 80;
-          const pillX = (canvas.width - pillW) / 2;
-          const pillY = 490;
-          
-          ctx.fillStyle = 'rgba(11, 15, 25, 0.5)';
-          ctx.beginPath();
-          ctx.roundRect(pillX, pillY, pillW, 60, 20);
-          ctx.fill();
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-          ctx.stroke();
-
-          ctx.fillStyle = '#A1A1A1';
-          fillTextCenter(roastText, 528);
-
-          // 8. Divider
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-          ctx.beginPath();
-          ctx.moveTo(100, 610);
-          ctx.lineTo(700, 610);
-          ctx.stroke();
-
-          // 9. Large Score
-          ctx.font = 'bold 130px monospace';
-          const cpsNum = finalCps.textContent;
-          const cpsW = ctx.measureText(cpsNum).width;
-          
-          ctx.font = 'bold 36px sans-serif';
-          const cpsTextW = ctx.measureText(' CPS').width;
-          
-          const totalW = cpsW + cpsTextW;
-          const startX = (canvas.width - totalW) / 2;
-
-          ctx.fillStyle = '#00D4FF';
-          ctx.font = 'bold 130px monospace';
-          ctx.fillText(cpsNum, startX, 760);
-          
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-          ctx.font = 'bold 36px sans-serif';
-          ctx.fillText(' CPS', startX + cpsW, 760);
-
-          // 10. Final Stats
-          ctx.fillStyle = 'rgba(161, 161, 161, 0.6)';
-          ctx.font = '18px monospace';
-          fillTextCenter(finalStats.textContent, 830);
-
-          // 11. Footer branding
-          ctx.fillStyle = '#A1A1A1';
-          ctx.font = 'bold 20px sans-serif';
-          fillTextCenter('TEST YOUR SPEED AT REALCPSTEST.PAGES.DEV', 940);
-
-          // Convert to image blob
-          canvas.toBlob(async (blob) => {
-            if (!blob) throw new Error("Blob failed");
-            try {
-              // Try clipboard API first (desktop)
-              const item = new ClipboardItem({ "image/png": blob });
-              await navigator.clipboard.write([item]);
-              shareBtn.innerHTML = '<span class="text-[#3FB950] text-xs">Image Copied!</span>';
-            } catch (err) {
-              // Fallback to native mobile share sheet
-              if (navigator.share) {
-                const file = new File([blob], "score.png", { type: "image/png" });
-                await navigator.share({
-                  title: "My CPS Score",
-                  files: [file]
-                });
-                shareBtn.innerHTML = '<span class="text-[#3FB950] text-xs">Shared!</span>';
-              } else {
-                 // Absolute fallback
-                 const url = URL.createObjectURL(blob);
-                 const a = document.createElement('a');
-                 a.href = url;
-                 a.download = 'score.png';
-                 a.click();
-                 URL.revokeObjectURL(url);
-                 shareBtn.innerHTML = '<span class="text-[#3FB950] text-xs">Saved!</span>';
-              }
-            }
-          }, 'image/png');
         } catch (err) {
-          console.error(err);
-          shareBtn.innerHTML = '<span class="text-red-500 text-xs">Error</span>';
+          if (err.name !== 'AbortError') {
+             shareBtn.innerHTML = '<span class="text-red-500 text-xs">Error</span>';
+          } else {
+             shareBtn.innerHTML = originalText;
+          }
         }
-        setTimeout(() => { shareBtn.innerHTML = originalText; }, 2500);
-      });
-      
-      copyLinkBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        navigator.clipboard.writeText(window.location.origin);
-        copyLinkBtn.textContent = 'Copied link!';
-        setTimeout(() => { copyLinkBtn.textContent = 'Copy link'; }, 2000);
+        if(shareBtn.innerHTML !== originalText) {
+            setTimeout(() => { shareBtn.innerHTML = originalText; }, 2500);
+        }
       });
 
       resetTest();
