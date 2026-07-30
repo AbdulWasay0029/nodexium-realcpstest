@@ -563,25 +563,71 @@ import Layout from '../layouts/Layout.astro';
       shareBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         const originalText = shareBtn.innerHTML;
-        shareBtn.innerHTML = '<span class="text-xs">Saving...</span>';
+        shareBtn.innerHTML = '<span class="text-xs">Copying...</span>';
         try {
-          const card = document.getElementById('modal-content');
-          // Temporarily add a solid background for the screenshot
-          const oldBg = card.style.backgroundColor;
-          card.style.backgroundColor = '#0B0F19';
+          const canvas = document.createElement('canvas');
+          canvas.width = 600;
+          canvas.height = 315;
+          const ctx = canvas.getContext('2d');
+
+          // 1. Background
+          ctx.fillStyle = '#0B0F19';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // 2. Borders
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+          ctx.lineWidth = 4;
+          ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+          ctx.strokeStyle = '#00D4FF';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
+
+          // 3. Header
+          ctx.fillStyle = '#EDEDED';
+          ctx.font = 'bold 24px sans-serif';
+          ctx.fillText('Real', 40, 55);
+          const realWidth = ctx.measureText('Real').width;
+          ctx.fillStyle = '#00D4FF';
+          ctx.fillText('CPSTest', 40 + realWidth + 5, 55);
           
-          const canvas = await window.html2canvas(card, {
-            backgroundColor: '#0B0F19',
-            scale: 2, // High resolution
-            logging: false,
-            useCORS: true
-          });
-          
-          card.style.backgroundColor = oldBg;
-          
+          ctx.fillStyle = '#A1A1A1';
+          ctx.font = '12px monospace';
+          ctx.fillText('SPEED BENCHMARK', 420, 50);
+
+          // Divider
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(40, 75);
+          ctx.lineTo(560, 75);
+          ctx.stroke();
+
+          // 4. Content Text
+          ctx.fillStyle = '#EDEDED';
+          ctx.font = '22px sans-serif';
+          ctx.fillText('I just scored', 40, 130);
+
+          // 5. Large Score
+          ctx.fillStyle = '#00D4FF';
+          ctx.font = 'bold 64px monospace';
+          ctx.fillText(`${finalCps.textContent} CPS`, 40, 200);
+
+          ctx.fillStyle = '#A1A1A1';
+          ctx.font = '16px sans-serif';
+          const emoji = rankIconContainer.textContent;
+          const rName = rankName.textContent;
+          ctx.fillText(`${emoji} ${rName}`, 40, 240);
+
+          // 6. Footer branding
+          ctx.fillStyle = '#A1A1A1';
+          ctx.font = '12px monospace';
+          ctx.fillText('Test your speed at realcpstest.pages.dev', 40, 280);
+
+          // Convert to image blob
           canvas.toBlob(async (blob) => {
+            if (!blob) throw new Error("Blob failed");
             try {
-              // Try clipboard API first (Perfect for desktop users pasting into Discord)
+              // Try clipboard API first (desktop)
               const item = new ClipboardItem({ "image/png": blob });
               await navigator.clipboard.write([item]);
               shareBtn.innerHTML = '<span class="text-[#3FB950] text-xs">Image Copied!</span>';
@@ -594,6 +640,15 @@ import Layout from '../layouts/Layout.astro';
                   files: [file]
                 });
                 shareBtn.innerHTML = '<span class="text-[#3FB950] text-xs">Shared!</span>';
+              } else {
+                 // Absolute fallback
+                 const url = URL.createObjectURL(blob);
+                 const a = document.createElement('a');
+                 a.href = url;
+                 a.download = 'score.png';
+                 a.click();
+                 URL.revokeObjectURL(url);
+                 shareBtn.innerHTML = '<span class="text-[#3FB950] text-xs">Saved!</span>';
               }
             }
           }, 'image/png');
