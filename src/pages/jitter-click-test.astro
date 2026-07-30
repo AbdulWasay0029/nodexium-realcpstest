@@ -517,11 +517,20 @@ import Layout from '../layouts/Layout.astro';
         });
       }
 
+      let activePointerId = null;
       clickArea.addEventListener('pointerdown', (e) => {
         e.preventDefault();
+        if (activePointerId !== null && activePointerId !== e.pointerId) return; // Prevent multi-touch drum rolling
+        activePointerId = e.pointerId;
         playClickSound();
         createRipple(e);
         registerClick(e);
+      });
+      clickArea.addEventListener('pointerup', (e) => {
+        if (activePointerId === e.pointerId) activePointerId = null;
+      });
+      clickArea.addEventListener('pointercancel', (e) => {
+        if (activePointerId === e.pointerId) activePointerId = null;
       });
 
       resetBtn.addEventListener('click', (e) => {
@@ -539,15 +548,35 @@ import Layout from '../layouts/Layout.astro';
       
       shareBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (navigator.share) {
-          try {
-            await navigator.share({ title: "My CPS Score", text: shareText(), url: window.location.origin });
-          } catch (err) {}
-        } else {
-          navigator.clipboard.writeText(shareText());
-          shareBtn.textContent = 'Copied!';
-          setTimeout(() => { shareBtn.textContent = 'Share result'; }, 2000);
+        const originalText = shareBtn.innerHTML;
+        shareBtn.innerHTML = '<span class="text-xs">Saving...</span>';
+        try {
+          const card = document.getElementById('modal-content');
+          // Temporarily add a solid background for the screenshot
+          const oldBg = card.style.backgroundColor;
+          card.style.backgroundColor = '#0B0F19';
+          
+          const canvas = await window.html2canvas(card, {
+            backgroundColor: '#0B0F19',
+            scale: 2, // High resolution
+            logging: false,
+            useCORS: true
+          });
+          
+          card.style.backgroundColor = oldBg;
+          
+          const imgData = canvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.download = `RealCPSTest-Score-${finalCps.textContent}.png`;
+          link.href = imgData;
+          link.click();
+          
+          shareBtn.innerHTML = '<span class="text-[#3FB950] text-xs">Saved!</span>';
+        } catch (err) {
+          console.error(err);
+          shareBtn.innerHTML = '<span class="text-red-500 text-xs">Error</span>';
         }
+        setTimeout(() => { shareBtn.innerHTML = originalText; }, 2500);
       });
       
       copyLinkBtn.addEventListener('click', (e) => {
