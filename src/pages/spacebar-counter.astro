@@ -579,13 +579,24 @@ import Layout from '../layouts/Layout.astro';
           
           card.style.backgroundColor = oldBg;
           
-          const imgData = canvas.toDataURL('image/png');
-          const link = document.createElement('a');
-          link.download = `RealCPSTest-Score-${finalCps.textContent}.png`;
-          link.href = imgData;
-          link.click();
-          
-          shareBtn.innerHTML = '<span class="text-[#3FB950] text-xs">Saved!</span>';
+          canvas.toBlob(async (blob) => {
+            try {
+              // Try clipboard API first (Perfect for desktop users pasting into Discord)
+              const item = new ClipboardItem({ "image/png": blob });
+              await navigator.clipboard.write([item]);
+              shareBtn.innerHTML = '<span class="text-[#3FB950] text-xs">Image Copied!</span>';
+            } catch (err) {
+              // Fallback to native mobile share sheet
+              if (navigator.share) {
+                const file = new File([blob], "score.png", { type: "image/png" });
+                await navigator.share({
+                  title: "My CPS Score",
+                  files: [file]
+                });
+                shareBtn.innerHTML = '<span class="text-[#3FB950] text-xs">Shared!</span>';
+              }
+            }
+          }, 'image/png');
         } catch (err) {
           console.error(err);
           shareBtn.innerHTML = '<span class="text-red-500 text-xs">Error</span>';
