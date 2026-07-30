@@ -567,7 +567,7 @@ import Layout from '../layouts/Layout.astro';
         try {
           const canvas = document.createElement('canvas');
           canvas.width = 800;
-          canvas.height = 800;
+          canvas.height = 1000; // Perfect 4:5 vertical portrait
           const ctx = canvas.getContext('2d');
 
           // Helper for center text
@@ -580,7 +580,7 @@ import Layout from '../layouts/Layout.astro';
           ctx.fillStyle = '#0B0F19';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           
-          const gradient = ctx.createRadialGradient(400, 0, 0, 400, 0, 600);
+          const gradient = ctx.createRadialGradient(400, 0, 0, 400, 0, 800);
           gradient.addColorStop(0, 'rgba(0, 212, 255, 0.15)');
           gradient.addColorStop(1, 'rgba(11, 15, 25, 0)');
           ctx.fillStyle = gradient;
@@ -591,16 +591,24 @@ import Layout from '../layouts/Layout.astro';
           ctx.lineWidth = 2;
           ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
 
-          // 3. Emoji at Top Center
-          ctx.font = '120px sans-serif';
-          fillTextCenter(rankIconContainer.textContent, 220);
-
-          // 4. Rank Name
+          // 3. Header Branding (Top Left)
           ctx.fillStyle = '#EDEDED';
-          ctx.font = 'bold 56px sans-serif';
-          fillTextCenter(rankName.textContent, 310);
+          ctx.font = 'bold 24px sans-serif';
+          ctx.fillText('Real', 40, 55);
+          const realWidth = ctx.measureText('Real').width;
+          ctx.fillStyle = '#00D4FF';
+          ctx.fillText('CPSTest', 40 + realWidth + 5, 55);
 
-          // 5. Stars
+          // 4. Emoji at Top Center
+          ctx.font = '140px sans-serif';
+          fillTextCenter(rankIconContainer.textContent, 260);
+
+          // 5. Rank Name
+          ctx.fillStyle = '#EDEDED';
+          ctx.font = 'bold 64px sans-serif';
+          fillTextCenter(rankName.textContent, 370);
+
+          // 6. Stars
           let scoreVal = parseFloat(finalCps.textContent);
           let starCount = 1;
           if (scoreVal >= 15) starCount = 5;
@@ -608,73 +616,67 @@ import Layout from '../layouts/Layout.astro';
           else if (scoreVal >= 9) starCount = 3;
           else if (scoreVal >= 6.5) starCount = 2;
           
-          ctx.font = '40px sans-serif';
-          ctx.fillStyle = '#00D4FF';
-          let starsStr = '';
-          for(let i = 0; i < starCount; i++) starsStr += '★ ';
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-          for(let i = starCount; i < 5; i++) starsStr += '★ ';
-          
+          ctx.font = '45px sans-serif';
           // Draw filled stars cyan, empty stars gray
-          let starX = (canvas.width - (5 * 40)) / 2;
+          let starX = (canvas.width - (5 * 45)) / 2;
           for (let i = 0; i < 5; i++) {
               ctx.fillStyle = (i < starCount) ? '#00D4FF' : 'rgba(255, 255, 255, 0.2)';
-              ctx.fillText('★', starX + (i * 40), 380);
+              ctx.fillText('★', starX + (i * 45), 440);
           }
 
-          // 6. Roast Pill
+          // 7. Roast Pill
           const roastText = roastLine.textContent;
-          ctx.font = 'italic 20px sans-serif';
+          ctx.font = 'italic 22px sans-serif';
           const roastW = ctx.measureText(roastText).width;
-          const pillW = roastW + 60;
+          const pillW = roastW + 80;
           const pillX = (canvas.width - pillW) / 2;
-          const pillY = 420;
+          const pillY = 490;
           
           ctx.fillStyle = 'rgba(11, 15, 25, 0.5)';
           ctx.beginPath();
-          ctx.roundRect(pillX, pillY, pillW, 50, 15);
+          ctx.roundRect(pillX, pillY, pillW, 60, 20);
           ctx.fill();
           ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
           ctx.stroke();
 
           ctx.fillStyle = '#A1A1A1';
-          fillTextCenter(roastText, 452);
+          fillTextCenter(roastText, 528);
 
-          // 7. Divider
+          // 8. Divider
           ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
           ctx.beginPath();
-          ctx.moveTo(100, 520);
-          ctx.lineTo(700, 520);
+          ctx.moveTo(100, 610);
+          ctx.lineTo(700, 610);
           ctx.stroke();
 
-          // 8. Large Score
-          ctx.font = 'bold 110px monospace';
+          // 9. Large Score
+          ctx.font = 'bold 130px monospace';
           const cpsNum = finalCps.textContent;
           const cpsW = ctx.measureText(cpsNum).width;
           
-          ctx.font = 'bold 30px sans-serif';
+          ctx.font = 'bold 36px sans-serif';
           const cpsTextW = ctx.measureText(' CPS').width;
           
           const totalW = cpsW + cpsTextW;
           const startX = (canvas.width - totalW) / 2;
 
           ctx.fillStyle = '#00D4FF';
-          ctx.font = 'bold 110px monospace';
-          ctx.fillText(cpsNum, startX, 640);
+          ctx.font = 'bold 130px monospace';
+          ctx.fillText(cpsNum, startX, 760);
           
           ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-          ctx.font = 'bold 30px sans-serif';
-          ctx.fillText(' CPS', startX + cpsW, 640);
+          ctx.font = 'bold 36px sans-serif';
+          ctx.fillText(' CPS', startX + cpsW, 760);
 
-          // 9. Final Stats (e.g. 141 CLICKS * 10 SECONDS)
+          // 10. Final Stats
           ctx.fillStyle = 'rgba(161, 161, 161, 0.6)';
-          ctx.font = '16px monospace';
-          fillTextCenter(finalStats.textContent, 690);
+          ctx.font = '18px monospace';
+          fillTextCenter(finalStats.textContent, 830);
 
-          // 10. Footer branding
+          // 11. Footer branding
           ctx.fillStyle = '#A1A1A1';
-          ctx.font = 'bold 18px sans-serif';
-          fillTextCenter('REALCPSTEST.PAGES.DEV', 760);
+          ctx.font = 'bold 20px sans-serif';
+          fillTextCenter('TEST YOUR SPEED AT REALCPSTEST.PAGES.DEV', 940);
 
           // Convert to image blob
           canvas.toBlob(async (blob) => {
