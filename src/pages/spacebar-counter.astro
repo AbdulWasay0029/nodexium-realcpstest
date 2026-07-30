@@ -566,62 +566,115 @@ import Layout from '../layouts/Layout.astro';
         shareBtn.innerHTML = '<span class="text-xs">Copying...</span>';
         try {
           const canvas = document.createElement('canvas');
-          canvas.width = 600;
-          canvas.height = 315;
+          canvas.width = 800;
+          canvas.height = 800;
           const ctx = canvas.getContext('2d');
 
-          // 1. Background
+          // Helper for center text
+          const fillTextCenter = (text, y) => {
+            const w = ctx.measureText(text).width;
+            ctx.fillText(text, (canvas.width - w) / 2, y);
+          };
+
+          // 1. Background (Dark with subtle blue glow top)
           ctx.fillStyle = '#0B0F19';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          // 2. Borders
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-          ctx.lineWidth = 4;
-          ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
-          ctx.strokeStyle = '#00D4FF';
-          ctx.lineWidth = 1.5;
-          ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
-
-          // 3. Header
-          ctx.fillStyle = '#EDEDED';
-          ctx.font = 'bold 24px sans-serif';
-          ctx.fillText('Real', 40, 55);
-          const realWidth = ctx.measureText('Real').width;
-          ctx.fillStyle = '#00D4FF';
-          ctx.fillText('CPSTest', 40 + realWidth + 5, 55);
           
-          ctx.fillStyle = '#A1A1A1';
-          ctx.font = '12px monospace';
-          ctx.fillText('SPEED BENCHMARK', 420, 50);
+          const gradient = ctx.createRadialGradient(400, 0, 0, 400, 0, 600);
+          gradient.addColorStop(0, 'rgba(0, 212, 255, 0.15)');
+          gradient.addColorStop(1, 'rgba(11, 15, 25, 0)');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-          // Divider
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-          ctx.lineWidth = 1;
+          // 2. Borders (Glassmorphism look)
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+          // 3. Emoji at Top Center
+          ctx.font = '120px sans-serif';
+          fillTextCenter(rankIconContainer.textContent, 220);
+
+          // 4. Rank Name
+          ctx.fillStyle = '#EDEDED';
+          ctx.font = 'bold 56px sans-serif';
+          fillTextCenter(rankName.textContent, 310);
+
+          // 5. Stars
+          let scoreVal = parseFloat(finalCps.textContent);
+          let starCount = 1;
+          if (scoreVal >= 15) starCount = 5;
+          else if (scoreVal >= 12) starCount = 4;
+          else if (scoreVal >= 9) starCount = 3;
+          else if (scoreVal >= 6.5) starCount = 2;
+          
+          ctx.font = '40px sans-serif';
+          ctx.fillStyle = '#00D4FF';
+          let starsStr = '';
+          for(let i = 0; i < starCount; i++) starsStr += '★ ';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+          for(let i = starCount; i < 5; i++) starsStr += '★ ';
+          
+          // Draw filled stars cyan, empty stars gray
+          let starX = (canvas.width - (5 * 40)) / 2;
+          for (let i = 0; i < 5; i++) {
+              ctx.fillStyle = (i < starCount) ? '#00D4FF' : 'rgba(255, 255, 255, 0.2)';
+              ctx.fillText('★', starX + (i * 40), 380);
+          }
+
+          // 6. Roast Pill
+          const roastText = roastLine.textContent;
+          ctx.font = 'italic 20px sans-serif';
+          const roastW = ctx.measureText(roastText).width;
+          const pillW = roastW + 60;
+          const pillX = (canvas.width - pillW) / 2;
+          const pillY = 420;
+          
+          ctx.fillStyle = 'rgba(11, 15, 25, 0.5)';
           ctx.beginPath();
-          ctx.moveTo(40, 75);
-          ctx.lineTo(560, 75);
+          ctx.roundRect(pillX, pillY, pillW, 50, 15);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
           ctx.stroke();
 
-          // 4. Content Text
-          ctx.fillStyle = '#EDEDED';
-          ctx.font = '22px sans-serif';
-          ctx.fillText('I just scored', 40, 130);
+          ctx.fillStyle = '#A1A1A1';
+          fillTextCenter(roastText, 452);
 
-          // 5. Large Score
+          // 7. Divider
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+          ctx.beginPath();
+          ctx.moveTo(100, 520);
+          ctx.lineTo(700, 520);
+          ctx.stroke();
+
+          // 8. Large Score
+          ctx.font = 'bold 110px monospace';
+          const cpsNum = finalCps.textContent;
+          const cpsW = ctx.measureText(cpsNum).width;
+          
+          ctx.font = 'bold 30px sans-serif';
+          const cpsTextW = ctx.measureText(' CPS').width;
+          
+          const totalW = cpsW + cpsTextW;
+          const startX = (canvas.width - totalW) / 2;
+
           ctx.fillStyle = '#00D4FF';
-          ctx.font = 'bold 64px monospace';
-          ctx.fillText(`${finalCps.textContent} CPS`, 40, 200);
+          ctx.font = 'bold 110px monospace';
+          ctx.fillText(cpsNum, startX, 640);
+          
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+          ctx.font = 'bold 30px sans-serif';
+          ctx.fillText(' CPS', startX + cpsW, 640);
 
-          ctx.fillStyle = '#A1A1A1';
-          ctx.font = '16px sans-serif';
-          const emoji = rankIconContainer.textContent;
-          const rName = rankName.textContent;
-          ctx.fillText(`${emoji} ${rName}`, 40, 240);
+          // 9. Final Stats (e.g. 141 CLICKS * 10 SECONDS)
+          ctx.fillStyle = 'rgba(161, 161, 161, 0.6)';
+          ctx.font = '16px monospace';
+          fillTextCenter(finalStats.textContent, 690);
 
-          // 6. Footer branding
+          // 10. Footer branding
           ctx.fillStyle = '#A1A1A1';
-          ctx.font = '12px monospace';
-          ctx.fillText('Test your speed at realcpstest.pages.dev', 40, 280);
+          ctx.font = 'bold 18px sans-serif';
+          fillTextCenter('REALCPSTEST.PAGES.DEV', 760);
 
           // Convert to image blob
           canvas.toBlob(async (blob) => {
